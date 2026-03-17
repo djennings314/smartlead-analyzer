@@ -1,24 +1,14 @@
 import { NextResponse } from 'next/server';
-import { slFetch } from '@/lib/smartlead';
+
+const BASE = 'https://server.smartlead.ai/api/v1';
 
 export async function GET() {
+  const key = process.env.SMARTLEAD_API_KEY;
   try {
-    const data = await slFetch('/campaigns?limit=100&offset=0');
-    
-    // Handle all the shapes Smartlead might return
-    let campaigns;
-    if (Array.isArray(data)) {
-      campaigns = data;
-    } else if (data?.data && Array.isArray(data.data)) {
-      campaigns = data.data;
-    } else if (data?.campaigns && Array.isArray(data.campaigns)) {
-      campaigns = data.campaigns;
-    } else {
-      campaigns = [];
-    }
-
-    return NextResponse.json(campaigns);
+    const res = await fetch(`${BASE}/campaigns?api_key=${key}&limit=100&offset=0`);
+    const text = await res.text();
+    return NextResponse.json({ status: res.status, body: text });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message, stack: e.stack }, { status: 500 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
